@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: postgres-container
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: bdaula
+    ports:
+      - "5433:5432"
+    volumes:
+      - meu-volume:/var/lib/postgresql/data
+      - ./db/comandos.sql:/docker-entrypoint-initdb.d/comandos.sql:ro
+    networks:
+      - minha-rede
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: server-container
+    ports:
+      - "3002:3000"
+    environment:
+      PORT: 3000
+      DB_HOST: postgres
+      DB_USER: postgres
+      DB_PASSWORD: 123
+      DB_DATABASE: bdaula
+      DB_PORT: 5432
+      NODE_ENV: development
+    depends_on:
+      - postgres
+    networks:
+      - minha-rede
+    # volumes:
+    #   - ./server:/app  # Somente para hot reload no desenvolvimento
+
+volumes:
+  meu-volume:
+
+networks:
+  minha-rede:
+    driver: bridge

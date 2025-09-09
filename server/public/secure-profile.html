@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Perfil Seguro</title>
+  </head>
+  <body>
+    <h2>Perfil do Usuário</h2>
+
+    <p><strong>Nome de usuário:</strong> <span id="username"></span></p>
+    <p><strong>Email:</strong> <span id="email"></span></p>
+
+    <p id="response" style="font-weight: bold; color: green"></p>
+
+    <!-- Bibliotecas -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
+      integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.5.25/lib/jsrsasign-all-min.js"></script>
+
+    <script>
+      async function carregarPerfil() {
+        const responseEl = document.getElementById("response");
+
+        try {
+          // 1. Gera chave AES (WordArray)
+          const aesKeyWordArray = CryptoJS.lib.WordArray.random(16);
+          const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKeyWordArray);
+          
+
+          // 2. Busca chave pública RSA do servidor
+          const pubKeyPem = await fetch("/api/crypto/public-key").then((res) =>
+            res.text()
+          );
+
+          // 3. Criptografa a chave AES com a chave pública
+          const encryptedKey = await encryptAESKeyWithRSA_OAEP(
+            pubKeyPem,
+            aesKeyBase64
+          );
+
+          // 4. Solicita dados criptografados do servidor
+          const res = await fetch("/api/user/profile-encrypted", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ encryptedKey }),
+            credentials: "include", // isso garante que o cookie será enviado
+          });
+
+          const json = await res.json();
+          if (!res.ok) throw new Error(json.error);
+
+          // 5. Descriptografa no navegador
+          const decryptedBytes = CryptoJS.AES.decrypt(
+            json.encryptedData,
+            aesKeyWordArray,
+            {
+              mode: CryptoJS.mode.ECB,
+              padding: CryptoJS.pad.Pkcs7,
+            }
+          );
+          const decryptedPayload = JSON.parse(
+            decryptedBytes.toString(CryptoJS.enc.Utf8)
+          );
+
+          document.getElementById("username").textContent =
+            decryptedPayload.username;
+          document.getElementById("email").textContent = decryptedPayload.email;
+        } catch (err) {
+          responseEl.style.color = "red";
+          responseEl.textContent = error.message || "Erro ao carregar perfil.";
+        }
+      }
+
+      // Função de criptografia RSA-OAEP com Web Crypto API
+      async function encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64) {
+        // Remove headers PEM
+        const pemContents = pubKeyPem
+          .replace("-----BEGIN PUBLIC KEY-----", "")
+          .replace("-----END PUBLIC KEY-----", "")
+          .replace(/\s/g, "");
+        const binaryDer = window.atob(pemContents);
+        const binaryDerBuffer = new Uint8Array(
+          [...binaryDer].map((c) => c.charCodeAt(0))
+        );
+
+        // Importa a chave pública
+        const cryptoKey = await window.crypto.subtle.importKey(
+          "spki",
+          binaryDerBuffer,
+          { name: "RSA-OAEP", hash: "SHA-256" },
+          false,
+          ["encrypt"]
+        );
+
+        // Codifica a AES key em UTF-8
+        const aesKeyBuffer = new TextEncoder().encode(aesKeyBase64);
+
+        // Criptografa
+        const encrypted = await window.crypto.subtle.encrypt(
+          { name: "RSA-OAEP" },
+          cryptoKey,
+          aesKeyBuffer
+        );
+
+        return arrayBufferToBase64(encrypted);
+      }
+
+      function arrayBufferToBase64(buffer) {
+        const binary = String.fromCharCode(...new Uint8Array(buffer));
+        return window.btoa(binary);
+      }
+
+      window.onload = carregarPerfil;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Cadastro Seguro</title>
+</head>
+
+<body>
+  <h2>Registro</h2>
+  <input id="username" placeholder="Username" />
+  <input id="password" type="password" placeholder="Password" />
+  <button onclick="register()">Registrar</button>
+
+  <h2>Login</h2>
+  <input id="loginUsername" placeholder="Username" />
+  <input id="loginPassword" type="password" placeholder="Password" />
+  <button onclick="login()">Login</button>
+
+  <script>
+    // Exemplo simplificado com CryptoJS
+    async function register() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      // Gera chave AES
+      const aesKey = CryptoJS.lib.WordArray.random(32);
+      const encryptedData = CryptoJS.AES.encrypt(JSON.stringify({ username, password }), aesKey).toString();
+
+      // TODO: Criptografar aesKey com RSA public.pem
+      const encryptedKey = "AES_KEY_ENCRYPTED_COM_RSA";
+
+      const res = await fetch("/api/register-secure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ encryptedKey, encryptedData }),
+      });
+      console.log(await res.json());
+    }
+
+  </script>
+</body>
+
+</html>
