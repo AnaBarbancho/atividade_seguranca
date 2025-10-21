@@ -1,43 +1,655 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="pt-BR">
 <head>
-  <title>Cadastro Seguro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Seguro - Cadastro e Contatos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --success-color: #4cc9f0;
+            --danger-color: #f72585;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --gray-color: #6c757d;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fb;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: var(--transition);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+        }
+
+        .card h2 i {
+            margin-right: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        button i {
+            margin-right: 8px;
+        }
+
+        .response {
+            margin-top: 15px;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+        }
+
+        .success {
+            background-color: rgba(76, 201, 240, 0.2);
+            color: #0a6c7c;
+            border-left: 4px solid var(--success-color);
+        }
+
+        .error {
+            background-color: rgba(247, 37, 133, 0.2);
+            color: #a10e4d;
+            border-left: 4px solid var(--danger-color);
+        }
+
+        .contacts-list {
+            list-style-type: none;
+        }
+
+        .contact-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+            border-left: 4px solid var(--primary-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .contact-info {
+            flex-grow: 1;
+        }
+
+        .contact-name {
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+
+        .contact-phone {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+
+        .contact-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit, .btn-delete {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .btn-edit {
+            background-color: var(--success-color);
+        }
+
+        .btn-delete {
+            background-color: var(--danger-color);
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary-color);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        .security-badge i {
+            margin-right: 5px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .user-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background-color: var(--danger-color);
+            padding: 8px 15px;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .login-required {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--gray-color);
+        }
+
+        .login-required i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--gray-color);
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .contact-actions {
+                align-self: flex-end;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <h2>Registro</h2>
-  <input id="username" placeholder="Username" />
-  <input id="password" type="password" placeholder="Password" />
-  <button onclick="register()">Registrar</button>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-shield-alt"></i> Sistema Seguro</h1>
+            <p>Cadastro, Login e Gerenciamento de Contatos com Criptografia</p>
+        </header>
 
-  <h2>Login</h2>
-  <input id="loginUsername" placeholder="Username" />
-  <input id="loginPassword" type="password" placeholder="Password" />
-  <button onclick="login()">Login</button>
+        <!-- Status do usuário (aparece apenas quando logado) -->
+        <div id="userStatus" class="user-status hidden">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div>
+                    <div id="userName">Usuário</div>
+                    <small id="userEmail">user@example.com</small>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Sair</button>
+        </div>
 
-  <script>
-    // Exemplo simplificado com CryptoJS
-    async function register() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+        <!-- Seção de Registro -->
+        <div class="card">
+            <h2><i class="fas fa-user-plus"></i> Criar Nova Conta</h2>
+            <div class="form-group">
+                <label for="username">Nome de Usuário</label>
+                <input type="text" id="username" placeholder="Digite seu nome de usuário">
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Digite sua senha">
+            </div>
+            <button onclick="register()"><i class="fas fa-user-check"></i> Registrar</button>
+            <div id="register-response" class="response"></div>
+        </div>
 
-      // Gera chave AES
-      const aesKey = CryptoJS.lib.WordArray.random(32);
-      const encryptedData = CryptoJS.AES.encrypt(JSON.stringify({ username, password }), aesKey).toString();
+        <!-- Seção de Login -->
+        <div class="card">
+            <h2><i class="fas fa-sign-in-alt"></i> Acessar Sistema</h2>
+            <div class="form-group">
+                <label for="loginUsername">Nome de Usuário</label>
+                <input type="text" id="loginUsername" placeholder="Digite seu nome de usuário">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">Senha</label>
+                <input type="password" id="loginPassword" placeholder="Digite sua senha">
+            </div>
+            <button onclick="login()"><i class="fas fa-lock-open"></i> Entrar</button>
+            <div id="login-response" class="response"></div>
+        </div>
 
-      // TODO: Criptografar aesKey com RSA public.pem
-      const encryptedKey = "AES_KEY_ENCRYPTED_COM_RSA";
+        <!-- Seção de Contatos (visível apenas quando logado) -->
+        <div id="contactsSection" class="hidden">
+            <div class="card">
+                <h2><i class="fas fa-address-book"></i> Gerenciar Contatos</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="contactName">Nome do Contato</label>
+                        <input type="text" id="contactName" placeholder="Nome completo">
+                    </div>
+                    <div class="form-group">
+                        <label for="contactPhone">Telefone</label>
+                        <input type="text" id="contactPhone" placeholder="(00) 00000-0000">
+                    </div>
+                </div>
+                <button onclick="addContact()"><i class="fas fa-plus-circle"></i> Adicionar Contato</button>
+                
+                <div class="security-badge">
+                    <i class="fas fa-lock"></i> Todos os dados são criptografados
+                </div>
+                
+                <h3 style="margin-top: 25px; margin-bottom: 15px;">Meus Contatos</h3>
+                <ul id="contactsList" class="contacts-list"></ul>
+            </div>
+        </div>
 
-      const res = await fetch("/api/register-secure", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ encryptedKey, encryptedData }),
-      });
-      console.log(await res.json());
-    }
+        <!-- Mensagem quando não está logado -->
+        <div id="loginRequired" class="card login-required">
+            <i class="fas fa-lock"></i>
+            <h3>Faça login para gerenciar seus contatos</h3>
+            <p>Entre com sua conta para visualizar e editar sua lista de contatos</p>
+        </div>
+    </div>
 
-  </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+    <script>
+        const API = "/api";
+        let isLoggedIn = false;
+        let currentUser = null;
+
+        // === 🔐 Criptografia RSA + AES ===
+        async function encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64) {
+            const pemContents = pubKeyPem.replace(/-----BEGIN PUBLIC KEY-----/, "")
+                                        .replace(/-----END PUBLIC KEY-----/, "")
+                                        .replace(/\s/g, "");
+            const binaryDer = atob(pemContents);
+            const binaryDerBuffer = new Uint8Array([...binaryDer].map(c => c.charCodeAt(0)));
+            const cryptoKey = await crypto.subtle.importKey(
+                "spki", binaryDerBuffer, { name: "RSA-OAEP", hash: "SHA-256" }, false, ["encrypt"]
+            );
+            const aesKeyBuffer = new TextEncoder().encode(aesKeyBase64);
+            const encrypted = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, cryptoKey, aesKeyBuffer);
+            return btoa(String.fromCharCode(...new Uint8Array(encrypted)));
+        }
+
+        // === 🧍 Registro ===
+        async function register() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const responseElement = document.getElementById("register-response");
+            
+            if (!username || !password) {
+                responseElement.textContent = "Por favor, preencha todos os campos!";
+                responseElement.className = "response error";
+                return;
+            }
+            
+            try {
+                const aesKey = CryptoJS.lib.WordArray.random(32);
+                const encryptedData = CryptoJS.AES.encrypt(JSON.stringify({ username, password }), aesKey, {
+                    mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7
+                }).toString();
+
+                const pubKeyPem = await fetch(`${API}/crypto/public-key`).then(r => r.text());
+                const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKey);
+                const encryptedKey = await encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64);
+
+                const res = await fetch(`${API}/user/register-secure`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ encryptedKey, encryptedData }),
+                    credentials: "include"
+                });
+                const json = await res.json();
+                
+                responseElement.textContent = json.message || json.error;
+                responseElement.className = res.ok ? "response success" : "response error";
+                
+                if (res.ok) {
+                    document.getElementById("username").value = "";
+                    document.getElementById("password").value = "";
+                }
+            } catch (err) {
+                console.error(err);
+                responseElement.textContent = "Erro ao conectar com o servidor. Tente novamente.";
+                responseElement.className = "response error";
+            }
+        }
+
+        // === 🔑 Login ===
+        async function login() {
+            const username = document.getElementById("loginUsername").value;
+            const password = document.getElementById("loginPassword").value;
+            const responseElement = document.getElementById("login-response");
+            
+            if (!username || !password) {
+                responseElement.textContent = "Por favor, preencha todos os campos!";
+                responseElement.className = "response error";
+                return;
+            }
+            
+            try {
+                const aesKey = CryptoJS.lib.WordArray.random(32);
+                const encryptedData = CryptoJS.AES.encrypt(JSON.stringify({ username, password }), aesKey, {
+                    mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7
+                }).toString();
+
+                const pubKeyPem = await fetch(`${API}/crypto/public-key`).then(r => r.text());
+                const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKey);
+                const encryptedKey = await encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64);
+
+                const res = await fetch(`${API}/user/login-secure`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ encryptedKey, encryptedData }),
+                    credentials: "include"
+                });
+
+                const json = await res.json();
+                responseElement.textContent = json.message || json.error;
+                responseElement.className = res.ok ? "response success" : "response error";
+
+                if (res.ok) {
+                    // Login bem-sucedido
+                    isLoggedIn = true;
+                    currentUser = username;
+                    document.getElementById("loginUsername").value = "";
+                    document.getElementById("loginPassword").value = "";
+                    
+                    // Atualizar interface
+                    updateUIForLoggedInUser();
+                    await loadContacts();
+                }
+            } catch (err) {
+                console.error(err);
+                responseElement.textContent = "Erro ao conectar com o servidor. Tente novamente.";
+                responseElement.className = "response error";
+            }
+        }
+
+        // === 📒 Adicionar Contato ===
+        async function addContact() {
+            const name = document.getElementById("contactName").value;
+            const phone = document.getElementById("contactPhone").value;
+            
+            if (!name || !phone) {
+                alert("Por favor, preencha todos os campos do contato!");
+                return;
+            }
+            
+            try {
+                const aesKey = CryptoJS.lib.WordArray.random(32);
+                const encryptedData = CryptoJS.AES.encrypt(JSON.stringify({ name, phone }), aesKey, {
+                    mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7
+                }).toString();
+
+                const pubKeyPem = await fetch(`${API}/crypto/public-key`).then(r => r.text());
+                const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKey);
+                const encryptedKey = await encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64);
+
+                const res = await fetch(`${API}/contacts`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ encryptedKey, encryptedData }),
+                    credentials: "include"
+                });
+
+                if (res.ok) {
+                    document.getElementById("contactName").value = "";
+                    document.getElementById("contactPhone").value = "";
+                    await loadContacts();
+                } else {
+                    alert("Erro ao adicionar contato. Tente novamente.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao conectar com o servidor. Tente novamente.");
+            }
+        }
+
+        // === 📥 Carregar Contatos ===
+        async function loadContacts() {
+            try {
+                const pubKeyPem = await fetch(`${API}/crypto/public-key`).then(r => r.text());
+                const aesKey = CryptoJS.lib.WordArray.random(32);
+                const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKey);
+                const encryptedKey = await encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64);
+
+                const res = await fetch(`${API}/contacts/list`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ encryptedKey }),
+                    credentials: "include"
+                });
+
+                if (!res.ok) {
+                    document.getElementById("contactsList").innerHTML = "<li class='contact-item'>Nenhum contato encontrado.</li>";
+                    return;
+                }
+
+                const json = await res.json();
+                const decryptedData = CryptoJS.AES.decrypt(json.encryptedData, aesKey, { mode: CryptoJS.mode.ECB, padding: CryptoJS.pad.Pkcs7 }).toString(CryptoJS.enc.Utf8);
+                const contacts = JSON.parse(decryptedData);
+
+                const ul = document.getElementById("contactsList");
+                ul.innerHTML = "";
+                
+                if (contacts.length === 0) {
+                    ul.innerHTML = "<li class='contact-item'>Nenhum contato cadastrado ainda.</li>";
+                    return;
+                }
+                
+                contacts.forEach(c => {
+                    const li = document.createElement("li");
+                    li.className = "contact-item";
+                    li.innerHTML = `
+                        <div class="contact-info">
+                            <div class="contact-name">${c.name}</div>
+                            <div class="contact-phone">${c.phone}</div>
+                        </div>
+                        <div class="contact-actions">
+                            <button class="btn-edit" onclick="editContact('${c.id}')"><i class="fas fa-edit"></i> Editar</button>
+                            <button class="btn-delete" onclick="deleteContact('${c.id}')"><i class="fas fa-trash"></i> Excluir</button>
+                        </div>
+                    `;
+                    ul.appendChild(li);
+                });
+            } catch (err) {
+                console.error(err);
+                document.getElementById("contactsList").innerHTML = "<li class='contact-item'>Erro ao carregar contatos.</li>";
+            }
+        }
+
+        // === 🚪 Logout ===
+        function logout() {
+            isLoggedIn = false;
+            currentUser = null;
+            updateUIForLoggedOutUser();
+            
+            // Limpar lista de contatos
+            document.getElementById("contactsList").innerHTML = "";
+        }
+
+        // === 🔄 Atualizar UI para usuário logado ===
+        function updateUIForLoggedInUser() {
+            document.getElementById("userStatus").classList.remove("hidden");
+            document.getElementById("contactsSection").classList.remove("hidden");
+            document.getElementById("loginRequired").classList.add("hidden");
+            
+            // Atualizar informações do usuário
+            document.getElementById("userName").textContent = currentUser;
+            document.getElementById("userAvatar").textContent = currentUser.charAt(0).toUpperCase();
+        }
+
+        // === 🔄 Atualizar UI para usuário deslogado ===
+        function updateUIForLoggedOutUser() {
+            document.getElementById("userStatus").classList.add("hidden");
+            document.getElementById("contactsSection").classList.add("hidden");
+            document.getElementById("loginRequired").classList.remove("hidden");
+        }
+
+        // === ✏️ Editar Contato (placeholder) ===
+        function editContact(contactId) {
+            alert(`Editar contato com ID: ${contactId} - Funcionalidade em desenvolvimento`);
+        }
+
+        // === 🗑️ Excluir Contato (placeholder) ===
+        function deleteContact(contactId) {
+            if (confirm("Tem certeza que deseja excluir este contato?")) {
+                alert(`Excluir contato com ID: ${contactId} - Funcionalidade em desenvolvimento`);
+                // Aqui você implementaria a chamada para a API de exclusão
+            }
+        }
+
+        // === 🕒 Verificar se o usuário já está logado ao carregar a página ===
+        window.addEventListener("load", function() {
+            // Verificar se há um usuário logado (simulação)
+            // Em uma aplicação real, você verificaria o token/cookie de sessão
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                isLoggedIn = true;
+                currentUser = savedUser;
+                updateUIForLoggedInUser();
+                loadContacts();
+            } else {
+                updateUIForLoggedOutUser();
+            }
+        });
+    </script>
 </body>
-
 </html>

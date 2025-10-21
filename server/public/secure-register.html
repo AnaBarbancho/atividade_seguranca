@@ -2,79 +2,65 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <title>Formulário Seguro</title>
+    <title>Cadastro Seguro</title>
   </head>
   <body>
     <h2>Cadastro com criptografia híbrida (AES + RSA-OAEP)</h2>
 
     <form id="secure-form">
       <label>Nome de usuário:</label><br />
-      <input type="text" name="username" value="teste" required /><br /><br />
+      <input type="text" name="username" required /><br /><br />
 
       <label>Email:</label><br />
-      <input
-        type="email"
-        name="email"
-        value="teste@test.com"
-        required
-      /><br /><br />
+      <input type="email" name="email" required /><br /><br />
 
       <label>Senha:</label><br />
-      <input type="password" name="password" value="123" required /><br /><br />
+      <input type="password" name="password" required /><br /><br />
 
       <button type="submit">Cadastrar</button>
     </form>
 
-    <p id="response" style="font-weight: bold; color: green"></p>
+    <p id="response" style="font-weight:bold;"></p>
 
     <!-- Bibliotecas -->
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"
-      integrity="sha512-a+SUDuwNzXDvz4XrIcXHuCf089/iJAoN4lmrXJg18XnduKK6YlDHNRalv4yd1N40OKI80tFidF+rqTFKGPoWFQ=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    ></script>
-    <script src="https://cdn.jsdelivr.net/npm/jsrsasign@10.5.25/lib/jsrsasign-all-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 
     <script>
       const form = document.getElementById("secure-form");
       const responseEl = document.getElementById("response");
 
-      form.addEventListener("submit", async (event) => {
-        event.preventDefault();
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
         const payload = JSON.stringify(data);
 
         try {
-          // 1. Gera uma chave AES como WordArray (128 bits)
-          const aesKeyWordArray = CryptoJS.lib.WordArray.random(16); // WordArray
-          const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKeyWordArray); // base64 string
+          // 1️⃣ Gerar chave AES 128 bits (WordArray)
+          const aesKeyWordArray = CryptoJS.lib.WordArray.random(16);
+          const aesKeyBase64 = CryptoJS.enc.Base64.stringify(aesKeyWordArray);
 
-          // 2. Criptografa os dados com AES (usando o WordArray como chave)
+          // 2️⃣ Criptografar os dados do usuário com AES
           const encryptedData = CryptoJS.AES.encrypt(payload, aesKeyWordArray, {
             mode: CryptoJS.mode.ECB,
-            padding: CryptoJS.pad.Pkcs7,
+            padding: CryptoJS.pad.Pkcs7
           }).toString();
 
-          // 3. Busca a chave pública do servidor
-          const pubKeyPem = await fetch("/api/crypto/public-key").then((res) =>
-            res.text()
-          );
+          // 3️⃣ Buscar chave pública do backend
+          const pubKeyPem = await fetch("/crypto/public-key").then(res => {
+            if (!res.ok) throw new Error("Falha ao obter chave pública");
+            return res.text();
+          });
 
-          // 4. Criptografa a AES key com RSA (envia como string base64)
-          const encryptedKey = await encryptAESKeyWithRSA_OAEP(
-            pubKeyPem,
-            aesKeyBase64
-          );
+          // 4️⃣ Criptografar a AES key com RSA-OAEP (Web Crypto API)
+          const encryptedKey = await encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64);
 
-          // 5. Envia os dados criptografados
-
-          const res = await fetch("/api/user/register-secure", {
+          // 5️⃣ Enviar para backend
+          const res = await fetch("/user/register-secure", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ encryptedKey, encryptedData }),
+            body: JSON.stringify({ encryptedKey, encryptedData })
           });
 
           const json = await res.json();
@@ -84,28 +70,27 @@
             responseEl.textContent = json.message;
           } else {
             responseEl.style.color = "red";
-            responseEl.textContent = json.error || "Erro no cadastro.";
+            responseEl.textContent = json.error || "Erro no cadastro";
           }
-        } catch (error) {
+
+        } catch (err) {
           responseEl.style.color = "red";
-          responseEl.textContent = "Erro ao enviar requisição.";
-          console.log(error.message);
+          responseEl.textContent = "Erro ao enviar requisição";
+          console.error(err);
         }
       });
 
-      // Função de criptografia RSA-OAEP com Web Crypto API
+      // 🔑 Função de criptografia RSA-OAEP
       async function encryptAESKeyWithRSA_OAEP(pubKeyPem, aesKeyBase64) {
-        // Remove headers PEM
         const pemContents = pubKeyPem
-          .replace("-----BEGIN PUBLIC KEY-----", "")
-          .replace("-----END PUBLIC KEY-----", "")
-          .replace(/\s/g, "");
-        const binaryDer = window.atob(pemContents);
-        const binaryDerBuffer = new Uint8Array(
-          [...binaryDer].map((c) => c.charCodeAt(0))
-        );
+          .replace(/-----BEGIN PUBLIC KEY-----/, "")
+          .replace(/-----END PUBLIC KEY-----/, "")
+          .replace(/\r?\n|\r/g, "")
+          .trim();
 
-        // Importa a chave pública
+        const binaryDer = window.atob(pemContents);
+        const binaryDerBuffer = new Uint8Array([...binaryDer].map(c => c.charCodeAt(0)));
+
         const cryptoKey = await window.crypto.subtle.importKey(
           "spki",
           binaryDerBuffer,
@@ -114,10 +99,8 @@
           ["encrypt"]
         );
 
-        // Codifica a AES key em UTF-8
         const aesKeyBuffer = new TextEncoder().encode(aesKeyBase64);
 
-        // Criptografa
         const encrypted = await window.crypto.subtle.encrypt(
           { name: "RSA-OAEP" },
           cryptoKey,
